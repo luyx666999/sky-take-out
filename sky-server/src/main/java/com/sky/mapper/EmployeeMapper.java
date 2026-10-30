@@ -35,9 +35,8 @@ public interface EmployeeMapper {
 
     /**
      * 启用禁用员工
-     * @param status
-     * @param id
+     * @param employee
      */
-    @Update("update employee set status = #{status} where id = #{id}")
-    void startOrStop(Integer status, Long id);
+
+    void startOrStop(Employee employee);
 }

@@ -104,7 +104,10 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public void startOrStop(Integer status, Long id) {
-        employeeMapper.startOrStop(status, id);
+        Employee employee = new Employee();
+        employee.setId(id);
+        employee.setStatus(status);
+        employeeMapper.startOrStop(employee);
     }
 
 
