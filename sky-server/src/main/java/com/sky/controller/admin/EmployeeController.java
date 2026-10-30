@@ -93,5 +93,21 @@ public class EmployeeController {
         PageResult pageResult = employeeService.pageQuery(employeePageQueryDTO);
         return Result.success(pageResult);
     }
-
+    /**
+     * 启用禁用员工
+     *
+     * @param status
+     * @param id
+     * @return
+     */
+    @PostMapping("/status/{status}")
+    @ApiOperation("启用禁用员工")
+    //要传进来状态和id，所以用@PathVariable和@RequestParam注解，表示从路径中取值和请求参数中取值，
+    // @PathVariable表示从路径中取值，@RequestParam表示从请求参数中取值，但是要保证参数名相同。
+    // @RequestBody表示从请求体中取值，@RequestHeader表示从请求头中取值
+    public Result startOrStop(@PathVariable Integer status, Long id) {
+        log.info("启用禁用员工：{}，状态：{}", id, status);
+        employeeService.startOrStop(status, id);
+        return Result.success();
+    }
 }
