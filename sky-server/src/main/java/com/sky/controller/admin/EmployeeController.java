@@ -4,6 +4,7 @@ import com.sky.constant.JwtClaimsConstant;
 import com.sky.dto.EmployeeDTO;
 import com.sky.dto.EmployeeLoginDTO;
 import com.sky.dto.EmployeePageQueryDTO;
+// import com.sky.dto.PasswordEditDTO;
 import com.sky.entity.Employee;
 import com.sky.properties.JwtProperties;
 import com.sky.result.PageResult;
@@ -70,6 +71,19 @@ public class EmployeeController {
         return Result.success();
     }
     /**
+     * 修改密码
+     *
+     * @param passwordEditDTO
+     * @return
+     */
+//    @PutMapping("/editPassword")
+//    @ApiOperation("修改密码")
+//    public Result<String> editPassword(@RequestBody PasswordEditDTO passwordEditDTO) {
+//        log.info("修改密码：{}", passwordEditDTO);
+//        employeeService.editPassword(passwordEditDTO);
+//        return Result.success();
+//    }
+    /**
      * 新增员工
      *
      * @return
@@ -108,6 +122,21 @@ public class EmployeeController {
     public Result startOrStop(@PathVariable Integer status, Long id) {
         log.info("启用禁用员工：{}，状态：{}", id, status);
         employeeService.startOrStop(status, id);
+        return Result.success();
+    }
+
+    @GetMapping("/{id}")
+    @ApiOperation("根据id查询员工")
+    public Result<EmployeeDTO> getById(@PathVariable Long id) {
+        log.info("根据id查询员工：{}", id);
+        EmployeeDTO employeeDTO = employeeService.getById(id);
+        return Result.success(employeeDTO);
+    }
+    @PutMapping
+    @ApiOperation("修改员工")
+    public Result<String> updateEmployee(@RequestBody EmployeeDTO employeeDTO) {
+        log.info("修改员工：{}", employeeDTO);
+        employeeService.updateEmployee(employeeDTO);
         return Result.success();
     }
 }

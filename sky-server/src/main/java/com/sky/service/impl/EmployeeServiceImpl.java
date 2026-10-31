@@ -9,9 +9,11 @@ import com.sky.context.BaseContext;
 import com.sky.dto.EmployeeDTO;
 import com.sky.dto.EmployeeLoginDTO;
 import com.sky.dto.EmployeePageQueryDTO;
+// import com.sky.dto.PasswordEditDTO;
 import com.sky.entity.Employee;
 import com.sky.exception.AccountLockedException;
 import com.sky.exception.AccountNotFoundException;
+// import com.sky.exception.PasswordEditFailedException;
 import com.sky.exception.PasswordErrorException;
 import com.sky.mapper.EmployeeMapper;
 import com.sky.result.PageResult;
@@ -20,6 +22,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
+// import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 
@@ -109,6 +112,42 @@ public class EmployeeServiceImpl implements EmployeeService {
         employee.setStatus(status);
         employeeMapper.startOrStop(employee);
     }
+
+    @Override
+    public EmployeeDTO getById(Long id) {
+        // 根据id查询员工
+        Employee employee = employeeMapper.getById(id);
+        // 封装员工DTO
+        EmployeeDTO employeeDTO = new EmployeeDTO();
+        //对象属性复制
+        BeanUtils.copyProperties(employee, employeeDTO);
+        return employeeDTO;
+    }
+
+    /**
+     * 根据id修改员工信息
+     * @param employeeDTO
+     */
+    @Override
+    public void updateEmployee(EmployeeDTO employeeDTO) {
+        //将 DTO 中的属性复制到员工实体，包括 id
+        Employee employee = new Employee();
+        BeanUtils.copyProperties(employeeDTO, employee);
+        //设置更新时间和服务员id
+        employee.setUpdateTime(LocalDateTime.now());
+        employee.setUpdateUser(BaseContext.getCurrentId());
+        //执行更新
+        employeeMapper.startOrStop(employee);
+
+    }
+
+//    @Override
+//    public void editPassword(PasswordEditDTO passwordEditDTO) {
+//        if(passwordEditDTO == null)
+//            || !StringUtils.hasText(passwordEditDTO.getNewPassword())
+//            || !StringUtils.hasText(passwordEditDTO.getOldPassword()))
+//            throw new PasswordEditFailedException("密码不能为空");
+//    }
 
 
 }
