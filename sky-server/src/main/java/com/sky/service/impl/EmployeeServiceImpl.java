@@ -10,11 +10,10 @@ import com.sky.dto.EmployeeDTO;
 import com.sky.dto.EmployeeLoginDTO;
 import com.sky.dto.EmployeePageQueryDTO;
 // import com.sky.dto.PasswordEditDTO;
+import com.sky.dto.PasswordEditDTO;
 import com.sky.entity.Employee;
-import com.sky.exception.AccountLockedException;
-import com.sky.exception.AccountNotFoundException;
+import com.sky.exception.*;
 // import com.sky.exception.PasswordEditFailedException;
-import com.sky.exception.PasswordErrorException;
 import com.sky.mapper.EmployeeMapper;
 import com.sky.result.PageResult;
 import com.sky.service.EmployeeService;
@@ -22,8 +21,10 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
+import org.springframework.util.StringUtils;
 // import org.springframework.util.StringUtils;
 
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 
 @Service
@@ -104,7 +105,11 @@ public class EmployeeServiceImpl implements EmployeeService {
         // 封装总记录数与当前页数据
         return new PageResult(page.getTotal(), page.getResult());
     }
-
+    /**
+     * 启用禁用员工账号
+     * @param status
+     * @param id
+     */
     @Override
     public void startOrStop(Integer status, Long id) {
         Employee employee = new Employee();
@@ -113,10 +118,19 @@ public class EmployeeServiceImpl implements EmployeeService {
         employeeMapper.startOrStop(employee);
     }
 
+    /**
+     * 根据id查询员工
+     * @param id
+     * @return
+     */
     @Override
     public EmployeeDTO getById(Long id) {
+        if(id == null)
+            throw new BaseException("ID不能为空");
         // 根据id查询员工
         Employee employee = employeeMapper.getById(id);
+        if(employee == null)
+            throw new BaseException("员工不存在");
         // 封装员工DTO
         EmployeeDTO employeeDTO = new EmployeeDTO();
         //对象属性复制
@@ -130,24 +144,57 @@ public class EmployeeServiceImpl implements EmployeeService {
      */
     @Override
     public void updateEmployee(EmployeeDTO employeeDTO) {
-        //将 DTO 中的属性复制到员工实体，包括 id
+        if(employeeDTO == null)
+            throw new BaseException("员工信息不能为空");
+        if(employeeDTO.getId() == null)
+            throw new BaseException("员工ID不能为空");
         Employee employee = new Employee();
         BeanUtils.copyProperties(employeeDTO, employee);
         //设置更新时间和服务员id
         employee.setUpdateTime(LocalDateTime.now());
         employee.setUpdateUser(BaseContext.getCurrentId());
         //执行更新
-        employeeMapper.startOrStop(employee);
+        int rows = employeeMapper.startOrStop(employee);
+        if (rows == 0) {
+            throw new BaseException("更新员工信息失败");
+        }
 
     }
 
-//    @Override
-//    public void editPassword(PasswordEditDTO passwordEditDTO) {
-//        if(passwordEditDTO == null)
-//            || !StringUtils.hasText(passwordEditDTO.getNewPassword())
-//            || !StringUtils.hasText(passwordEditDTO.getOldPassword()))
-//            throw new PasswordEditFailedException("密码不能为空");
-//    }
+    @Override
+    public void editPassword(PasswordEditDTO passwordEditDTO) {
+        // 检查参数
+        if (passwordEditDTO == null
+                || !StringUtils.hasText(passwordEditDTO.getOldPassword())
+                || !StringUtils.hasText(passwordEditDTO.getNewPassword())) {
+            throw new PasswordEditFailedException("员工ID、新旧密码不能为空");
+        }
 
+        // 只能修改当前登录员工自己的密码
+        Long currentId = BaseContext.getCurrentId();
+        if (currentId == null || !currentId.equals(passwordEditDTO.getEmpId())) {
+            throw new PasswordEditFailedException("只能修改自己的密码");
+        }
 
+        Employee employee = employeeMapper.getById(currentId);
+        if (employee == null) {
+            throw new AccountNotFoundException(MessageConstant.ACCOUNT_NOT_FOUND);
+        }
+
+        // 旧密码做 MD5 后，再与数据库里的密码比较
+        String oldPassword = DigestUtils.md5DigestAsHex(
+                passwordEditDTO.getOldPassword().getBytes(StandardCharsets.UTF_8));
+
+        if (!oldPassword.equals(employee.getPassword())) {
+            throw new PasswordErrorException(MessageConstant.PASSWORD_ERROR);
+        }
+
+        // 新密码按项目现有登录逻辑，做 MD5 后存储
+        Employee update = new Employee();
+        update.setId(currentId);
+        update.setPassword(DigestUtils.md5DigestAsHex(passwordEditDTO.getNewPassword().getBytes(StandardCharsets.UTF_8)));
+        update.setUpdateTime(LocalDateTime.now());
+        update.setUpdateUser(currentId);
+        employeeMapper.startOrStop(update);
+    }
 }

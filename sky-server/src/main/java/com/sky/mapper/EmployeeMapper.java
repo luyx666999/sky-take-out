@@ -39,7 +39,7 @@ public interface EmployeeMapper {
      * @param employee
      */
 
-    void startOrStop(Employee employee);
+    int startOrStop(Employee employee);
 
     /**
      * 根据id查询员工
