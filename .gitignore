@@ -4,3 +4,9 @@
 *.class
 *Test.java
 **/test/
+
+# 保留 Day 05 的 Redis 集成练习。
+!/sky-server/src/test/
+/sky-server/src/test/**
+!/sky-server/src/test/**/
+!/sky-server/src/test/java/com/sky/test/SpringDataRedisIT.java
