@@ -34,6 +34,8 @@ public interface DishMapper {
     @Select("select * from dish where category_id = #{categoryId} order by id")
     List<Dish> listByCategoryId(@Param("categoryId") Long categoryId);
 
+    List<Dish> list(Dish dish);
+
     List<Dish> listByIdsForUpdate(@Param("ids") List<Long> ids);
 
     void deleteByIds(@Param("ids") List<Long> ids);

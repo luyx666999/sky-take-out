@@ -15,3 +15,6 @@ sky:
     access-key-secret: ${ALIBABA_CLOUD_ACCESS_KEY_SECRET:}
     bucket-name: web-tlias9233
     endpoint: oss-cn-beijing.aliyuncs.com
+  wechat:
+    appid: wxcc9660c90bef26e6
+    secret: 02199a60dd889f64062880de6b2e8911

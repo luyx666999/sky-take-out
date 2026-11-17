@@ -35,7 +35,13 @@ logging:
         controller: info
 
 sky:
+  wechat:
+    appid: ${WECHAT_APP_ID:}
+    secret: ${WECHAT_APP_SECRET:}
   jwt:
+    user-secret-key: itheima
+    user-ttl: 7200000
+    user-token-name: authentication
     # 设置jwt签名加密时使用的秘钥
     admin-secret-key: itcast
     # 设置jwt过期时间

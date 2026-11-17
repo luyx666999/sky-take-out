@@ -21,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -76,10 +77,7 @@ public class DishServiceImpl implements DishService {
         if (dish == null) {
             throw new BaseException("菜品不存在");
         }
-        DishVO dishVO = new DishVO();
-        BeanUtils.copyProperties(dish, dishVO);
-        dishVO.setFlavors(dishFlavorMapper.getByDishId(id));
-        return dishVO;
+        return toDishVOWithFlavor(dish);
     }
 
     @Override
@@ -102,11 +100,29 @@ public class DishServiceImpl implements DishService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<DishVO> listWithFlavor(Dish filter) {
+        List<Dish> dishes = dishMapper.list(filter);
+        List<DishVO> result = new ArrayList<>(dishes.size());
+        for (Dish dish : dishes) {
+            result.add(toDishVOWithFlavor(dish));
+        }
+        return result;
+    }
+
+    @Override
     public void startOrStop(Integer status, Long id) {
         if (!StatusConstant.ENABLE.equals(status) && !StatusConstant.DISABLE.equals(status)) {
             throw new BaseException("菜品状态无效");
         }
         dishMapper.update(Dish.builder().id(id).status(status).build());
+    }
+
+    private DishVO toDishVOWithFlavor(Dish dish) {
+        DishVO dishVO = new DishVO();
+        BeanUtils.copyProperties(dish, dishVO);
+        dishVO.setFlavors(dishFlavorMapper.getByDishId(dish.getId()));
+        return dishVO;
     }
 
     private void saveFlavors(Long dishId, List<DishFlavor> flavors) {
